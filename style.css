@@ -1,0 +1,726 @@
+/* ===== 设计令牌 ===== */
+:root {
+  /* 主色调 */
+  --bg-deep: #0f172a;
+  --bg-surface: rgba(15, 23, 42, 0.6);
+  --glass-bg: rgba(30, 41, 59, 0.45);
+  --glass-border: rgba(148, 163, 184, 0.12);
+
+  /* 霓虹色 */
+  --cyan: #22d3ee;
+  --cyan-dim: #0e7490;
+  --cyan-glow: rgba(34, 211, 238, 0.35);
+  --fuchsia: #d946ef;
+  --fuchsia-dim: #a21caf;
+  --fuchsia-glow: rgba(217, 70, 239, 0.3);
+
+  /* 文本 */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* 字体 */
+  --font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* 过渡 */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== 基础重置 ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== 动态背景球体 ===== */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-orb-cyan {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--cyan) 0%, transparent 70%);
+  top: -10%;
+  left: -8%;
+  animation: float-cyan 18s ease-in-out infinite alternate;
+}
+
+.bg-orb-fuchsia {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, var(--fuchsia) 0%, transparent 70%);
+  bottom: -12%;
+  right: -6%;
+  animation: float-fuchsia 22s ease-in-out infinite alternate;
+}
+
+@keyframes float-cyan {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(80px, 60px) scale(1.1); }
+  66%  { transform: translate(-40px, 120px) scale(0.95); }
+  100% { transform: translate(60px, 30px) scale(1.05); }
+}
+
+@keyframes float-fuchsia {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-70px, -50px) scale(1.08); }
+  66%  { transform: translate(50px, -100px) scale(0.92); }
+  100% { transform: translate(-30px, -60px) scale(1.03); }
+}
+
+/* ===== 页面通用 ===== */
+.page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.page.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ===== 毛玻璃容器 ===== */
+.glass-container {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+/* ===== 渐变标题 ===== */
+.gradient-title {
+  background: linear-gradient(135deg, var(--cyan), var(--fuchsia));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ===== 霓虹按钮 ===== */
+.neon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 36px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--cyan-dim), var(--cyan));
+  color: var(--bg-deep);
+  font-family: var(--font-family);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 20px var(--cyan-glow), 0 0 60px rgba(34, 211, 238, 0.15);
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.15));
+  opacity: 0;
+  transition: var(--transition-fast);
+}
+
+.neon-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px var(--cyan-glow), 0 0 80px rgba(34, 211, 238, 0.25);
+}
+
+.neon-btn:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.neon-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.neon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.btn-arrow {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--transition-fast);
+}
+
+.neon-btn:hover:not(:disabled) .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* ==============================================
+   登录页面
+   ============================================== */
+.login-container {
+  width: 440px;
+  max-width: 92vw;
+  padding: 48px 40px;
+  text-align: center;
+  animation: fadeInUp 0.7s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-container .gradient-title {
+  font-size: 2.6rem;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  color: var(--text-muted);
+  margin-bottom: 36px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 0.03em;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.5);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 1rem;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.input-group input::placeholder {
+  color: var(--text-muted);
+}
+
+.input-group input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+}
+
+.login-form .neon-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* "或"分隔线 */
+.divider-or {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0;
+}
+
+.divider-or::before,
+.divider-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--glass-border);
+}
+
+.divider-or span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* 游客模式幽灵按钮 */
+.ghost-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 36px;
+  border: 1.5px solid rgba(217, 70, 239, 0.35);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.ghost-btn:hover {
+  border-color: var(--fuchsia);
+  color: var(--fuchsia);
+  background: rgba(217, 70, 239, 0.08);
+  box-shadow: 0 0 20px var(--fuchsia-glow);
+  transform: translateY(-2px);
+}
+
+.ghost-btn:active {
+  transform: translateY(0);
+}
+
+.login-footer {
+  margin-top: 32px;
+}
+
+.login-footer p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ==============================================
+   游戏页面
+   ============================================== */
+.game-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 1200px;
+  height: calc(100vh - 40px);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* 侧面板 */
+.side-panel {
+  width: 240px;
+  min-width: 200px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-muted) transparent;
+}
+
+/* 玩家信息 */
+.player-info {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.avatar-ring {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan), var(--fuchsia));
+  padding: 3px;
+  animation: ring-rotate 6s linear infinite;
+}
+
+@keyframes ring-rotate {
+  to { filter: hue-rotate(360deg); }
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.player-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.login-time {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* 统计区域 */
+.stats-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.stat-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.06);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-value.cyan {
+  color: var(--cyan);
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+
+/* 游戏中心区域 */
+.game-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.canvas-wrapper {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: 3px;
+  background: linear-gradient(135deg, var(--cyan), var(--fuchsia));
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.15), 0 0 80px rgba(217, 70, 239, 0.1);
+}
+
+#game-canvas {
+  display: block;
+  border-radius: calc(var(--radius-lg) - 3px);
+  background: #0c1222;
+}
+
+/* 画布覆盖层 */
+.canvas-overlay {
+  position: absolute;
+  inset: 3px;
+  border-radius: calc(var(--radius-lg) - 3px);
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.canvas-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.overlay-title {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.overlay-message {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.overlay-message kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--glass-border);
+  font-family: var(--font-family);
+  font-size: 0.82rem;
+  color: var(--cyan);
+}
+
+.overlay-btn {
+  padding: 12px 32px;
+  font-size: 0.95rem;
+}
+
+/* 游戏控制按钮 */
+.game-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.control-btn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.control-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.control-btn:hover {
+  color: var(--cyan);
+  border-color: rgba(34, 211, 238, 0.3);
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.12);
+}
+
+/* 排行榜 */
+.leaderboard, .recent-games {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.06);
+  transition: var(--transition-fast);
+}
+
+.lb-item:first-child {
+  border-color: rgba(34, 211, 238, 0.2);
+  background: rgba(34, 211, 238, 0.06);
+}
+
+.lb-rank {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.lb-item:nth-child(1) .lb-rank { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e; }
+.lb-item:nth-child(2) .lb-rank { background: linear-gradient(135deg, #94a3b8, #cbd5e1); color: #1a1a2e; }
+.lb-item:nth-child(3) .lb-rank { background: linear-gradient(135deg, #d97706, #b45309); color: #1a1a2e; }
+
+.lb-name {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lb-score {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 最近记录 */
+.rg-item {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.06);
+  font-size: 0.78rem;
+}
+
+.rg-item .rg-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.rg-item .rg-score {
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.rg-item .rg-time {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.empty-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ===== 得分弹出动画 ===== */
+.score-popup {
+  position: absolute;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan-glow);
+  pointer-events: none;
+  animation: scoreFloat 0.8s ease-out forwards;
+  z-index: 10;
+}
+
+@keyframes scoreFloat {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1.3);
+  }
+}
+
+/* ===== 游戏结束闪烁 ===== */
+@keyframes gameOverFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 960px) {
+  .game-layout {
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .side-panel {
+    width: 100%;
+    max-width: 500px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .player-info {
+    width: 100%;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .stats-section {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  #game-canvas {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-container {
+    padding: 32px 24px;
+  }
+
+  .login-container .gradient-title {
+    font-size: 2rem;
+  }
+
+  .game-layout {
+    padding: 10px;
+    gap: 10px;
+  }
+}
