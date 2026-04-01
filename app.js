@@ -85,7 +85,7 @@ let gameState = 'idle';     // idle | playing | paused | gameover
 let snake = [];             // 蛇身体 [{x, y}, ...]
 let food = null;            // 食物位置 {x, y}
 let direction = DIR.RIGHT;
-let inputQueue = [];        // 按键输入队列，防止单帧内多次按键冲突
+let nextDirection = DIR.RIGHT;
 let score = 0;
 let speed = BASE_SPEED;
 let gameLoop = null;
@@ -242,7 +242,7 @@ function resetGame() {
   ];
 
   direction = DIR.RIGHT;
-  inputQueue = [];
+  nextDirection = DIR.RIGHT;
   score = 0;
   speed = BASE_SPEED;
   particles = [];
@@ -302,9 +302,7 @@ function resumeGame() {
 
 function gameTick() {
   // 应用方向
-  if (inputQueue.length > 0) {
-    direction = inputQueue.shift();
-  }
+  direction = nextDirection;
 
   // 计算新头部
   const head = snake[0];
@@ -662,10 +660,11 @@ document.addEventListener('keydown', (e) => {
   // 登录页面回车
   if (dom.loginPage.classList.contains('active')) return;
 
-  const key = e.key.toLowerCase();
+  const code = e.code ? e.code.toLowerCase() : '';
+  const key = e.key ? e.key.toLowerCase() : '';
 
   // 空格键：开始/暂停
-  if (key === ' ' || e.code === 'Space') {
+  if (key === ' ' || code === 'space') {
     e.preventDefault();
     if (gameState === 'idle' || gameState === 'gameover') {
       resetGame();
@@ -681,37 +680,25 @@ document.addEventListener('keydown', (e) => {
   // 方向键
   if (gameState !== 'playing') return;
 
-  let handled = true;
   let dir = null;
-  switch (key) {
-    case 'arrowup':
-    case 'w': dir = DIR.UP; break;
-    case 'arrowdown':
-    case 's': dir = DIR.DOWN; break;
-    case 'arrowleft':
-    case 'a': dir = DIR.LEFT; break;
-    case 'arrowright':
-    case 'd': dir = DIR.RIGHT; break;
-    default: handled = false;
+  
+  if (code === 'arrowup' || key === 'arrowup' || code === 'keyw' || key === 'w') {
+    dir = DIR.UP;
+  } else if (code === 'arrowdown' || key === 'arrowdown' || code === 'keys' || key === 's') {
+    dir = DIR.DOWN;
+  } else if (code === 'arrowleft' || key === 'arrowleft' || code === 'keya' || key === 'a') {
+    dir = DIR.LEFT;
+  } else if (code === 'arrowright' || key === 'arrowright' || code === 'keyd' || key === 'd') {
+    dir = DIR.RIGHT;
   }
 
-  if (handled && dir) {
-    // 获取当前预计最终的方向（如果队列有元素，则取最后一个；否则取当前移动方向）
-    const lastDir = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : direction;
-    
-    // 判断是否是 180 度反转
-    const isOpposite = (dir === DIR.UP && lastDir === DIR.DOWN) ||
-                       (dir === DIR.DOWN && lastDir === DIR.UP) ||
-                       (dir === DIR.LEFT && lastDir === DIR.RIGHT) ||
-                       (dir === DIR.RIGHT && lastDir === DIR.LEFT);
-                       
-    // 如果既不是反原方向，也不等于最后一个方向，再加入队列
-    if (!isOpposite && dir !== lastDir) {
-      if (inputQueue.length < 3) {
-        inputQueue.push(dir);
-      }
-    }
+  if (dir) {
     e.preventDefault();
+    // 只阻止180度掉头（用坐标加法判断：反向向量之和为零）
+    const isReverse = (dir.x + nextDirection.x === 0 && dir.y + nextDirection.y === 0);
+    if (!isReverse) {
+      nextDirection = dir;
+    }
   }
 });
 
