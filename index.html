@@ -8,7 +8,7 @@
   >
   <meta
     name="description"
-    content="霓虹贪吃蛇，一款为手机触控和桌面键盘同时优化的网页小游戏。"
+    content="适合手机与桌面操作的霓虹风贪吃蛇网页游戏。"
   >
   <title>霓虹贪吃蛇 | Neon Snake</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,10 +25,11 @@
 
   <main id="login-page" class="page active" aria-labelledby="login-title">
     <section class="login-card glass-panel">
-      <p class="eyebrow">Mobile First Snake</p>
+      <p class="eyebrow">Button First Snake</p>
       <h1 id="login-title" class="gradient-title">霓虹贪吃蛇</h1>
       <p class="login-copy">
-        现在支持滑动操作和屏幕方向键，手机上也能顺手开玩。
+        手机端只保留底部方向按键，减少误触；桌面端仍支持方向键或
+        <span class="nowrap">WASD</span>。
       </p>
 
       <div class="login-form">
@@ -52,14 +53,14 @@
           <span>或</span>
         </div>
 
-        <button id="guest-btn" class="secondary-btn">
-          游客模式快速开始
+        <button id="guest-btn" class="secondary-btn" type="button">
+          游客快速开始
         </button>
       </div>
 
       <ul class="login-tips">
-        <li>手机端：在棋盘上滑动，或使用屏幕方向键。</li>
-        <li>桌面端：方向键或 WASD 控制移动，空格暂停/继续。</li>
+        <li>手机端：使用下方按键控制，暂停和重开在按键区上方。</li>
+        <li>桌面端：方向键或 WASD 移动，空格暂停或继续。</li>
       </ul>
     </section>
   </main>
@@ -98,20 +99,10 @@
             <strong id="game-speed">1x</strong>
           </div>
           <div class="status-chip">
-            <span class="status-label">方向</span>
-            <strong id="direction-label">右</strong>
+            <span class="status-label">最高分</span>
+            <strong id="best-score">0</strong>
           </div>
         </div>
-
-        <section class="leaderboard-strip" aria-label="排行榜预览">
-          <div class="leaderboard-strip-head">
-            <p class="eyebrow">Top Players</p>
-            <span class="strip-note">历史最高分</span>
-          </div>
-          <div id="leaderboard-preview" class="leaderboard-preview">
-            <p class="empty-text">暂无记录</p>
-          </div>
-        </section>
       </header>
 
       <section class="play-layout">
@@ -126,10 +117,10 @@
 
             <div id="overlay" class="canvas-overlay active">
               <div class="overlay-card">
-                <p class="eyebrow">Touch Ready</p>
+                <p class="eyebrow">Game Ready</p>
                 <h3 id="overlay-title" class="gradient-title">准备开玩</h3>
                 <p id="overlay-message" class="overlay-message">
-                  点击开始按钮，或在开始后直接滑动棋盘控制方向。
+                  点击开始。手机端请使用下方按键操作；桌面端也支持键盘。
                 </p>
                 <button id="overlay-btn" class="primary-btn overlay-btn">
                   <span>开始游戏</span>
@@ -138,12 +129,16 @@
             </div>
           </div>
 
-          <p class="touch-hint">
-            手机可直接在棋盘上滑动。下方方向键适合单手拇指操作。
-          </p>
-
           <div class="touch-controls">
             <div class="dpad glass-panel" aria-label="方向控制">
+              <button
+                id="pause-btn"
+                type="button"
+                class="dpad-utility dpad-pause"
+              >
+                <span class="action-kicker">Pause</span>
+                <span id="pause-label">暂停</span>
+              </button>
               <button
                 type="button"
                 class="dpad-btn dpad-up"
@@ -151,12 +146,20 @@
                 aria-label="向上"
               >↑</button>
               <button
+                id="restart-btn"
+                type="button"
+                class="dpad-utility dpad-restart"
+              >
+                <span class="action-kicker">Reset</span>
+                <span>重开</span>
+              </button>
+              <button
                 type="button"
                 class="dpad-btn dpad-left"
                 data-dir="left"
                 aria-label="向左"
               >←</button>
-              <div class="dpad-core" aria-hidden="true">滑</div>
+              <div class="dpad-gap" aria-hidden="true"></div>
               <button
                 type="button"
                 class="dpad-btn dpad-right"
@@ -170,66 +173,12 @@
                 aria-label="向下"
               >↓</button>
             </div>
-
-            <div class="action-row">
-              <button id="pause-btn" class="action-btn">
-                <span class="action-kicker">Space</span>
-                <span id="pause-label">暂停</span>
-              </button>
-              <button id="restart-btn" class="action-btn">
-                <span class="action-kicker">Reset</span>
-                <span>重新开始</span>
-              </button>
-            </div>
           </div>
         </section>
-
-        <aside class="info-rail">
-          <section class="glass-panel info-card">
-            <div class="card-heading">
-              <h3>累计统计</h3>
-              <p>会持续保存在本地浏览器里</p>
-            </div>
-            <div class="info-list">
-              <div class="info-row">
-                <span>最高分</span>
-                <strong id="best-score">0</strong>
-              </div>
-              <div class="info-row">
-                <span>总游戏局数</span>
-                <strong id="total-games">0</strong>
-              </div>
-              <div class="info-row">
-                <span>总吃到食物</span>
-                <strong id="total-food">0</strong>
-              </div>
-            </div>
-          </section>
-
-          <section class="glass-panel info-card">
-            <div class="card-heading">
-              <h3>排行榜</h3>
-              <p>按玩家历史最高分排序</p>
-            </div>
-            <div id="leaderboard" class="leaderboard">
-              <p class="empty-text">暂无记录</p>
-            </div>
-          </section>
-
-          <section class="glass-panel info-card">
-            <div class="card-heading">
-              <h3>最近记录</h3>
-              <p>只展示当前玩家最近的几局</p>
-            </div>
-            <div id="recent-games" class="recent-games">
-              <p class="empty-text">暂无记录</p>
-            </div>
-          </section>
-        </aside>
       </section>
     </div>
   </main>
 
-  <script src="app.js?v=3.0"></script>
+  <script src="app.js?v=4.0"></script>
 </body>
 </html>

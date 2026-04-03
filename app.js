@@ -4,13 +4,12 @@ const SPEED_STEP = 6;
 const MIN_SPEED = 92;
 const SCORE_PER_FOOD = 10;
 const STORAGE_KEY = "neon_snake_data";
-const SWIPE_THRESHOLD = 28;
 
 const DIRECTIONS = {
-  up: { x: 0, y: -1, label: "上" },
-  down: { x: 0, y: 1, label: "下" },
-  left: { x: -1, y: 0, label: "左" },
-  right: { x: 1, y: 0, label: "右" },
+  up: { x: 0, y: -1 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
 };
 
 const OPPOSITE = {
@@ -47,16 +46,9 @@ const dom = {
   currentScore: $("#current-score"),
   snakeLength: $("#snake-length"),
   gameSpeed: $("#game-speed"),
-  directionLabel: $("#direction-label"),
-  leaderboardPreview: $("#leaderboard-preview"),
   bestScore: $("#best-score"),
-  totalGames: $("#total-games"),
-  totalFood: $("#total-food"),
-  leaderboard: $("#leaderboard"),
-  recentGames: $("#recent-games"),
   canvas: $("#game-canvas"),
   touchSurface: $("#touch-surface"),
-  touchHint: document.querySelector(".touch-hint"),
   touchControls: document.querySelector(".touch-controls"),
   overlay: $("#overlay"),
   overlayTitle: $("#overlay-title"),
@@ -77,6 +69,7 @@ let gameState = "idle";
 let snake = [];
 let food = null;
 let score = 0;
+let bestScoreValue = 0;
 let speed = BASE_SPEED;
 let gameLoop = null;
 let particles = [];
@@ -87,7 +80,6 @@ let turnLocked = false;
 let boardSize = 480;
 let cellSize = boardSize / GRID_SIZE;
 let pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-let touchSession = null;
 let resizeFrame = null;
 let animFrame = null;
 
@@ -173,8 +165,6 @@ function handleLogin() {
   dom.loginTime.textContent = `登录于 ${formatTime(loginTimestamp)}`;
 
   refreshStats();
-  refreshLeaderboard();
-  refreshRecentGames();
   resetGame();
   showReadyOverlay();
 
@@ -194,6 +184,7 @@ function handleLogout() {
   particles = [];
   pendingDirection = null;
   turnLocked = false;
+  bestScoreValue = 0;
 
   dom.gamePage.classList.remove("active");
   dom.loginPage.classList.add("active");
@@ -216,7 +207,7 @@ function hideOverlay() {
 function showReadyOverlay() {
   showOverlay(
     "准备开玩",
-    "手机上直接在棋盘滑动，或使用下方方向键。桌面端也支持方向键和 WASD。",
+    "手机端使用下方按键操作。桌面端也支持键盘方向键和 WASD。",
     "开始游戏",
   );
 }
@@ -273,7 +264,7 @@ function pauseGame() {
   updateHud();
   showOverlay(
     "已暂停",
-    "点击继续按钮，或按空格键恢复。手机端也可以直接点下方暂停按钮。",
+    "点击继续按钮，或按空格键恢复。",
     "继续游戏",
   );
 }
@@ -417,8 +408,7 @@ function endGame(isWin) {
   }
 
   refreshStats();
-  refreshLeaderboard();
-  refreshRecentGames();
+  bestScoreValue = Math.max(bestScoreValue, score);
   updateHud();
 
   const title = isWin ? "满屏通关" : "撞上了";
@@ -435,130 +425,33 @@ function updateHud() {
 
   const speedLevel = Math.round((BASE_SPEED - speed) / SPEED_STEP) + 1;
   dom.gameSpeed.textContent = `${speedLevel}x`;
-  dom.directionLabel.textContent = DIRECTIONS[currentDirection].label;
+  dom.bestScore.textContent = String(Math.max(bestScoreValue, score));
   dom.pauseLabel.textContent = gameState === "playing" ? "暂停" : "继续";
-  renderLeaderboardPreview(getLeaderboardEntries({ includeCurrentRun: true }));
 }
 
 function refreshStats() {
   if (!currentUser) {
     dom.bestScore.textContent = "0";
-    dom.totalGames.textContent = "0";
-    dom.totalFood.textContent = "0";
+    bestScoreValue = 0;
     return;
   }
 
   const userData = getUserData(currentUser);
-  dom.bestScore.textContent = String(userData.bestScore);
-  dom.totalGames.textContent = String(userData.totalGames);
-  dom.totalFood.textContent = String(userData.totalFood);
-}
-
-function refreshLeaderboard() {
-  const entries = getLeaderboardEntries();
-
-  renderLeaderboardPreview(entries);
-
-  if (entries.length === 0) {
-    dom.leaderboard.innerHTML = '<p class="empty-text">暂无记录</p>';
-    return;
-  }
-
-  dom.leaderboard.innerHTML = entries
-    .map(
-      (entry, index) => `
-        <div class="lb-item">
-          <span class="lb-rank">${index + 1}</span>
-          <span class="lb-name">${escapeHtml(entry.name)}</span>
-          <span class="lb-score">${entry.score}</span>
-        </div>
-      `,
-    )
-    .join("");
-}
-
-function getLeaderboardEntries({ includeCurrentRun = false } = {}) {
-  const data = loadData();
-  const entries = Object.entries(data.users)
-    .map(([name, userData]) => ({ name, score: userData.bestScore || 0 }))
-    .filter((entry) => entry.score > 0);
-
-  if (includeCurrentRun && currentUser && score > 0) {
-    const currentEntry = entries.find((entry) => entry.name === currentUser);
-    if (currentEntry) {
-      currentEntry.score = Math.max(currentEntry.score, score);
-    } else {
-      entries.push({ name: currentUser, score });
-    }
-  }
-
-  return entries
-    .sort((left, right) => right.score - left.score)
-    .slice(0, 10);
-}
-
-function renderLeaderboardPreview(entries) {
-  if (!dom.leaderboardPreview) {
-    return;
-  }
-
-  const topEntries = entries.slice(0, 3);
-
-  if (topEntries.length === 0) {
-    dom.leaderboardPreview.innerHTML = '<p class="empty-text">暂无记录</p>';
-    return;
-  }
-
-  dom.leaderboardPreview.innerHTML = topEntries
-    .map(
-      (entry, index) => `
-        <div class="lb-preview-item${entry.name === currentUser ? " is-current" : ""}">
-          <span class="lb-preview-rank">#${index + 1}</span>
-          <span class="lb-preview-name">${escapeHtml(entry.name)}</span>
-          <strong class="lb-preview-score">${entry.score}</strong>
-        </div>
-      `,
-    )
-    .join("");
-}
-
-function refreshRecentGames() {
-  if (!currentUser) {
-    dom.recentGames.innerHTML = '<p class="empty-text">暂无记录</p>';
-    return;
-  }
-
-  const recent = getUserData(currentUser).gameHistory.slice(-6).reverse();
-
-  if (recent.length === 0) {
-    dom.recentGames.innerHTML = '<p class="empty-text">暂无记录</p>';
-    return;
-  }
-
-  dom.recentGames.innerHTML = recent
-    .map(
-      (item) => `
-        <div class="rg-item">
-          <div class="rg-top">
-            <span class="rg-score">${item.score} 分</span>
-            <span>长度 ${item.length}</span>
-          </div>
-          <div class="rg-time">${formatDateTime(item.timestamp)}</div>
-        </div>
-      `,
-    )
-    .join("");
+  bestScoreValue = userData.bestScore || 0;
+  dom.bestScore.textContent = String(bestScoreValue);
 }
 
 function resizeCanvas() {
   if (window.innerWidth <= 640) {
-    const shellPadding = 18;
-    const availableWidth = Math.min((dom.touchSurface.parentElement?.clientWidth || window.innerWidth) - shellPadding, 560);
+    const shellPadding = 16;
+    const availableWidth = Math.min(
+      (dom.touchSurface.parentElement?.clientWidth || window.innerWidth) - shellPadding,
+      720,
+    );
     const headerHeight = dom.hudBar?.getBoundingClientRect().height || 0;
-    const hintHeight = dom.touchHint?.getBoundingClientRect().height || 0;
     const controlsHeight = dom.touchControls?.getBoundingClientRect().height || 0;
-    const viewportBudget = window.innerHeight - headerHeight - hintHeight - controlsHeight - 44;
-    const mobileSize = Math.min(availableWidth, Math.max(236, Math.floor(viewportBudget)));
+    const viewportBudget = window.innerHeight - headerHeight - controlsHeight - 20;
+    const mobileSize = Math.min(availableWidth, Math.max(260, Math.floor(viewportBudget)));
     dom.touchSurface.style.width = `${mobileSize}px`;
   } else {
     dom.touchSurface.style.width = "";
@@ -884,61 +777,6 @@ function handleDpadPress(event) {
   requestDirection(directionKey);
 }
 
-function handleSurfacePointerDown(event) {
-  if (event.target.closest("button")) {
-    return;
-  }
-
-  touchSession = {
-    id: event.pointerId,
-    x: event.clientX,
-    y: event.clientY,
-    time: performance.now(),
-  };
-
-  if (dom.touchSurface.setPointerCapture) {
-    dom.touchSurface.setPointerCapture(event.pointerId);
-  }
-}
-
-function handleSurfacePointerUp(event) {
-  if (!touchSession || touchSession.id !== event.pointerId) {
-    return;
-  }
-
-  const deltaX = event.clientX - touchSession.x;
-  const deltaY = event.clientY - touchSession.y;
-  const absX = Math.abs(deltaX);
-  const absY = Math.abs(deltaY);
-  touchSession = null;
-
-  if (gameState !== "playing") {
-    return;
-  }
-
-  if (Math.max(absX, absY) < SWIPE_THRESHOLD) {
-    return;
-  }
-
-  let directionKey = null;
-
-  if (absX > absY * 1.1) {
-    directionKey = deltaX > 0 ? "right" : "left";
-  } else if (absY > absX * 1.1) {
-    directionKey = deltaY > 0 ? "down" : "up";
-  } else {
-    directionKey = absX >= absY
-      ? (deltaX > 0 ? "right" : "left")
-      : (deltaY > 0 ? "down" : "up");
-  }
-
-  requestDirection(directionKey);
-}
-
-function clearTouchSession() {
-  touchSession = null;
-}
-
 function roundRect(context, x, y, width, height, radius) {
   context.beginPath();
   context.moveTo(x + radius, y);
@@ -971,29 +809,12 @@ function hexToRgb(hex) {
   };
 }
 
-function escapeHtml(value) {
-  const element = document.createElement("div");
-  element.textContent = value;
-  return element.innerHTML;
-}
-
 function formatTime(timestamp) {
   return new Date(timestamp).toLocaleTimeString("zh-CN", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
   });
-}
-
-function formatDateTime(timestamp) {
-  const date = new Date(timestamp);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const time = date.toLocaleTimeString("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${month}/${day} ${time}`;
 }
 
 function idleRender() {
@@ -1022,11 +843,6 @@ dom.dpadButtons.forEach((button) => {
 document.addEventListener("keydown", handleKeydown, { passive: false });
 window.addEventListener("resize", scheduleResize);
 window.addEventListener("orientationchange", scheduleResize);
-
-dom.touchSurface.addEventListener("pointerdown", handleSurfacePointerDown);
-dom.touchSurface.addEventListener("pointerup", handleSurfacePointerUp);
-dom.touchSurface.addEventListener("pointercancel", clearTouchSession);
-dom.touchSurface.addEventListener("lostpointercapture", clearTouchSession);
 
 window.__snakeDebug = {
   login(name = "AUTO") {
