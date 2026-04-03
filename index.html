@@ -2,133 +2,234 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="霓虹贪吃蛇 - 一个拥有炫酷视觉效果的网页版贪吃蛇游戏">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+  <meta
+    name="description"
+    content="霓虹贪吃蛇，一款为手机触控和桌面键盘同时优化的网页小游戏。"
+  >
   <title>霓虹贪吃蛇 | Neon Snake</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- 动态背景发光球体 -->
   <div class="bg-orb bg-orb-cyan"></div>
   <div class="bg-orb bg-orb-fuchsia"></div>
 
-  <!-- ====== 登录页面 ====== -->
-  <div id="login-page" class="page active">
-    <div class="glass-container login-container">
-      <h1 class="gradient-title">霓虹贪吃蛇</h1>
-      <p class="subtitle">NEON SNAKE</p>
+  <main id="login-page" class="page active" aria-labelledby="login-title">
+    <section class="login-card glass-panel">
+      <p class="eyebrow">Mobile First Snake</p>
+      <h1 id="login-title" class="gradient-title">霓虹贪吃蛇</h1>
+      <p class="login-copy">
+        现在支持滑动操作和屏幕方向键，手机上也能顺手开玩。
+      </p>
+
       <div class="login-form">
-        <div class="input-group">
-          <label for="username-input">玩家昵称</label>
-          <input type="text" id="username-input" placeholder="输入你的昵称..." maxlength="12" autocomplete="off">
-        </div>
-        <button id="login-btn" class="neon-btn" disabled>
-          <span>开始游戏</span>
-          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <label class="input-group" for="username-input">
+          <span>玩家昵称</span>
+          <input
+            type="text"
+            id="username-input"
+            placeholder="输入你的昵称"
+            maxlength="12"
+            autocomplete="off"
+          >
+        </label>
+
+        <button id="login-btn" class="primary-btn" disabled>
+          <span>进入游戏</span>
+          <span class="btn-icon" aria-hidden="true">→</span>
         </button>
-        <div class="divider-or">
+
+        <div class="divider">
           <span>或</span>
         </div>
-        <button id="guest-btn" class="ghost-btn">
-          <span>🎮 游客模式快速开始</span>
+
+        <button id="guest-btn" class="secondary-btn">
+          游客模式快速开始
         </button>
       </div>
-      <div class="login-footer">
-        <p>使用方向键或 WASD 控制蛇的移动</p>
-      </div>
-    </div>
-  </div>
 
-  <!-- ====== 游戏页面 ====== -->
-  <div id="game-page" class="page">
-    <div class="game-layout">
-      <!-- 左侧面板：玩家信息与统计 -->
-      <aside class="glass-container side-panel left-panel">
-        <div class="player-info">
-          <div class="avatar-ring">
-            <div class="avatar" id="player-avatar">🐍</div>
-          </div>
-          <h2 id="player-name" class="player-name">玩家</h2>
-          <p class="login-time" id="login-time">--:--:--</p>
-        </div>
-        <div class="stats-section">
-          <h3 class="section-title">本局数据</h3>
-          <div class="stat-card">
-            <span class="stat-label">当前得分</span>
-            <span class="stat-value" id="current-score">0</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">蛇身长度</span>
-            <span class="stat-value" id="snake-length">3</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">游戏速度</span>
-            <span class="stat-value" id="game-speed">1x</span>
-          </div>
-        </div>
-        <div class="stats-section">
-          <h3 class="section-title">累计统计</h3>
-          <div class="stat-card">
-            <span class="stat-label">最高分</span>
-            <span class="stat-value cyan" id="best-score">0</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">总游戏局数</span>
-            <span class="stat-value" id="total-games">0</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">总吃到食物</span>
-            <span class="stat-value" id="total-food">0</span>
-          </div>
-        </div>
-      </aside>
+      <ul class="login-tips">
+        <li>手机端：在棋盘上滑动，或使用屏幕方向键。</li>
+        <li>桌面端：方向键或 WASD 控制移动，空格暂停/继续。</li>
+      </ul>
+    </section>
+  </main>
 
-      <!-- 中间：游戏画布 -->
-      <main class="game-center">
-        <div class="canvas-wrapper">
-          <canvas id="game-canvas" width="480" height="480"></canvas>
-          <!-- 游戏开始 / 暂停 / 结束的覆盖层 -->
-          <div id="overlay" class="canvas-overlay active">
-            <div class="overlay-content">
-              <h2 id="overlay-title" class="gradient-title overlay-title">准备就绪</h2>
-              <p id="overlay-message" class="overlay-message">按 <kbd>空格键</kbd> 或点击下方按钮开始</p>
-              <button id="overlay-btn" class="neon-btn overlay-btn">
-                <span>开始游戏</span>
+  <main id="game-page" class="page" aria-labelledby="player-name">
+    <div class="game-shell">
+      <header class="hud-bar glass-panel">
+        <div class="hud-top">
+          <div class="player-block">
+            <div class="avatar-ring" aria-hidden="true">
+              <div class="avatar" id="player-avatar">S</div>
+            </div>
+            <div class="player-copy">
+              <p class="eyebrow">Current Player</p>
+              <h2 id="player-name">玩家</h2>
+              <p id="login-time" class="muted-text">--:--:--</p>
+            </div>
+          </div>
+
+          <button id="logout-btn" class="mini-action danger-btn" type="button">
+            退出
+          </button>
+        </div>
+
+        <div class="status-strip" aria-label="当前状态">
+          <div class="status-chip">
+            <span class="status-label">得分</span>
+            <strong id="current-score">0</strong>
+          </div>
+          <div class="status-chip">
+            <span class="status-label">长度</span>
+            <strong id="snake-length">3</strong>
+          </div>
+          <div class="status-chip">
+            <span class="status-label">速度</span>
+            <strong id="game-speed">1x</strong>
+          </div>
+          <div class="status-chip">
+            <span class="status-label">方向</span>
+            <strong id="direction-label">右</strong>
+          </div>
+        </div>
+
+        <section class="leaderboard-strip" aria-label="排行榜预览">
+          <div class="leaderboard-strip-head">
+            <p class="eyebrow">Top Players</p>
+            <span class="strip-note">历史最高分</span>
+          </div>
+          <div id="leaderboard-preview" class="leaderboard-preview">
+            <p class="empty-text">暂无记录</p>
+          </div>
+        </section>
+      </header>
+
+      <section class="play-layout">
+        <section class="play-stage">
+          <div id="touch-surface" class="canvas-shell glass-panel">
+            <canvas
+              id="game-canvas"
+              width="480"
+              height="480"
+              aria-label="游戏棋盘"
+            ></canvas>
+
+            <div id="overlay" class="canvas-overlay active">
+              <div class="overlay-card">
+                <p class="eyebrow">Touch Ready</p>
+                <h3 id="overlay-title" class="gradient-title">准备开玩</h3>
+                <p id="overlay-message" class="overlay-message">
+                  点击开始按钮，或在开始后直接滑动棋盘控制方向。
+                </p>
+                <button id="overlay-btn" class="primary-btn overlay-btn">
+                  <span>开始游戏</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p class="touch-hint">
+            手机可直接在棋盘上滑动。下方方向键适合单手拇指操作。
+          </p>
+
+          <div class="touch-controls">
+            <div class="dpad glass-panel" aria-label="方向控制">
+              <button
+                type="button"
+                class="dpad-btn dpad-up"
+                data-dir="up"
+                aria-label="向上"
+              >↑</button>
+              <button
+                type="button"
+                class="dpad-btn dpad-left"
+                data-dir="left"
+                aria-label="向左"
+              >←</button>
+              <div class="dpad-core" aria-hidden="true">滑</div>
+              <button
+                type="button"
+                class="dpad-btn dpad-right"
+                data-dir="right"
+                aria-label="向右"
+              >→</button>
+              <button
+                type="button"
+                class="dpad-btn dpad-down"
+                data-dir="down"
+                aria-label="向下"
+              >↓</button>
+            </div>
+
+            <div class="action-row">
+              <button id="pause-btn" class="action-btn">
+                <span class="action-kicker">Space</span>
+                <span id="pause-label">暂停</span>
+              </button>
+              <button id="restart-btn" class="action-btn">
+                <span class="action-kicker">Reset</span>
+                <span>重新开始</span>
               </button>
             </div>
           </div>
-        </div>
-        <div class="game-controls">
-          <button id="pause-btn" class="control-btn" title="暂停/继续">
-            <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
-          </button>
-          <button id="restart-btn" class="control-btn" title="重新开始">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-          </button>
-          <button id="logout-btn" class="control-btn" title="退出登录">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          </button>
-        </div>
-      </main>
+        </section>
 
-      <!-- 右侧面板：排行榜 -->
-      <aside class="glass-container side-panel right-panel">
-        <h3 class="section-title">🏆 排行榜</h3>
-        <div id="leaderboard" class="leaderboard">
-          <p class="empty-text">暂无记录</p>
-        </div>
-        <h3 class="section-title" style="margin-top:24px;">📜 最近记录</h3>
-        <div id="recent-games" class="recent-games">
-          <p class="empty-text">暂无记录</p>
-        </div>
-      </aside>
+        <aside class="info-rail">
+          <section class="glass-panel info-card">
+            <div class="card-heading">
+              <h3>累计统计</h3>
+              <p>会持续保存在本地浏览器里</p>
+            </div>
+            <div class="info-list">
+              <div class="info-row">
+                <span>最高分</span>
+                <strong id="best-score">0</strong>
+              </div>
+              <div class="info-row">
+                <span>总游戏局数</span>
+                <strong id="total-games">0</strong>
+              </div>
+              <div class="info-row">
+                <span>总吃到食物</span>
+                <strong id="total-food">0</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass-panel info-card">
+            <div class="card-heading">
+              <h3>排行榜</h3>
+              <p>按玩家历史最高分排序</p>
+            </div>
+            <div id="leaderboard" class="leaderboard">
+              <p class="empty-text">暂无记录</p>
+            </div>
+          </section>
+
+          <section class="glass-panel info-card">
+            <div class="card-heading">
+              <h3>最近记录</h3>
+              <p>只展示当前玩家最近的几局</p>
+            </div>
+            <div id="recent-games" class="recent-games">
+              <p class="empty-text">暂无记录</p>
+            </div>
+          </section>
+        </aside>
+      </section>
     </div>
-  </div>
+  </main>
 
-  <script src="app.js?v=2.0"></script>
+  <script src="app.js?v=3.0"></script>
 </body>
 </html>
